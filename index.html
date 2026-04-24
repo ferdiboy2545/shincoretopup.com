@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shincore TopUp</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+body{
+  font-family:sans-serif;
+  background:radial-gradient(circle at top,#0b1220,#05070d);
+  color:white;
+  overflow-x:hidden;
+}
+
+canvas{
+  position:fixed;
+  top:0;
+  left:0;
+  z-index:-1;
+}
+
+.navbar{
+  position:sticky;
+  top:0;
+  z-index:1000;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:14px 25px;
+
+  backdrop-filter: blur(15px);
+  background:rgba(10,15,25,0.65);
+  border-bottom:1px solid rgba(245,197,66,0.2);
+
+  transition:0.3s;
+}
+
+/* efek shrink saat scroll */
+.navbar.shrink{
+  padding:8px 20px;
+  background:rgba(10,15,25,0.85);
+}
+
+/* kiri */
+.left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:65px;
+  transition:0.3s;
+}
+
+.logo:hover{
+  transform:scale(1.1) rotate(2deg);
+  filter:drop-shadow(0 0 15px #f5c542);
+}
+
+
+/* menu */
+.menu{
+  display:flex;
+  gap:22px;
+}
+
+.menu a{
+  color:white;
+  text-decoration:none;
+  font-size:14px;
+  position:relative;
+  transition:0.3s;
+}
+
+/* underline animasi */
+.menu a::after{
+  content:"";
+  position:absolute;
+  bottom:-5px;
+  left:0;
+  width:0%;
+  height:2px;
+  background:#f5c542;
+  transition:0.3s;
+}
+
+.menu a:hover::after,
+.menu a.active::after{
+  width:100%;
+}
+
+.menu a:hover{
+  color:#f5c542;
+}
+
+/* hamburger */
+.toggle{
+  display:none;
+  font-size:28px;
+  cursor:pointer;
+  color:#f5c542;
+  transition:0.3s;
+}
+
+.toggle.active{
+  transform:rotate(90deg);
+}
+
+/* MOBILE */
+@media (max-width:768px){
+
+  .menu{
+    position:absolute;
+    top:70px;
+    right:15px;
+    flex-direction:column;
+    background:rgba(15,23,42,0.95);
+    padding:15px;
+    border-radius:12px;
+    border:1px solid rgba(245,197,66,0.2);
+    display:none;
+    min-width:140px;
+  }
+
+  .menu.active{
+    display:flex;
+  }
+
+  .toggle{
+    display:block;
+  }
+}
+
+
+/* HEADER */
+header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:20px;
+}
+
+/* LOGO FIX */
+.logo{
+  width:45px;
+  height:45px;
+  object-fit:contain;
+  animation:floatLogo 3s ease-in-out infinite;
+}
+
+@keyframes floatLogo{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-3px);}
+}
+
+.logo:hover{
+  transform:scale(1.08);
+  filter:drop-shadow(0 0 18px #f5c542);
+}
+
+.brand{
+  display:flex;
+  flex-direction:column;
+  line-height:1;
+}
+
+.brand span{
+  font-size:28px;
+  font-weight:bold;
+  background:linear-gradient(90deg,#f5c542,#fff3b0,#f5c542);
+  background-size:200%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:gold 4s linear infinite;
+}
+
+.brand small{
+  color:#d4af37;
+  letter-spacing:4px;
+}
+
+@keyframes gold{
+  from{background-position:0%}
+  to{background-position:200%}
+}
+
+/* CONTAINER */
+.container{
+  max-width:900px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+/* CARD */
+.card{
+  background:#0f172a;
+  padding:20px;
+  border-radius:15px;
+  border:1px solid rgba(245,197,66,0.15);
+  transition:0.3s;
+}
+.card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 25px rgba(245,197,66,0.15);
+}
+
+/* GAME */
+.game-list{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.game{
+  border-radius:10px;
+  overflow:hidden;
+  cursor:pointer;
+  border:1px solid transparent;
+}
+
+.game img{
+  width:100%;
+  height:100px;
+  object-fit:cover;
+}
+
+.game.active{
+  border:1px solid #f5c542;
+  box-shadow:0 0 12px rgba(245,197,66,0.25);
+}
+
+/* INPUT */
+input{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  background:#0b1220;
+  border:none;
+  color:white;
+  border-radius:8px;
+}
+
+/* DIAMOND */
+.diamond-box{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.diamond{
+  position:relative;
+  padding:15px;
+  background:#0b1220;
+  border-radius:10px;
+  text-align:center;
+  cursor:pointer;
+}
+
+/* angka utama */
+.amount{
+  font-weight:bold;
+  font-size:16px;
+}
+
+/* harga kecil pojok kanan */
+.price-tag{
+  position:absolute;
+  top:6px;
+  right:8px;
+  font-size:10px;
+  color:#f5c542;
+  opacity:0.8;
+}
+
+.diamond:hover{
+  transform:scale(1.03);
+}
+
+.active{
+  border:1px solid #f5c542;
+}
+
+/* PAYMENT */
+.payment{
+  margin-top:15px;
+  padding:15px;
+  border:1px solid rgba(245,197,66,0.2);
+  border-radius:12px;
+}
+
+.pay-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+
+.pay{
+  background:#0b1220;
+  padding:10px;
+  text-align:center;
+  border-radius:10px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.pay:hover{
+  border:1px solid #f5c542;
+  transform:scale(1.05);
+}
+
+.pay.active{
+  border:1px solid #f5c542;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  background:linear-gradient(90deg,#b8860b,#f5c542,#b8860b);
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+  color:black;
+}
+button:hover{
+  transform:scale(1.05);
+}
+
+.banner {
+  margin: 15px auto;
+  width: 100%;
+  max-width: 900px;
+  overflow: hidden;
+  white-space: nowrap;
+  background: linear-gradient(90deg, #0f172a, #111827);
+  border-top: 1px solid rgba(245,197,66,0.2);
+  border-bottom: 1px solid rgba(245,197,66,0.2);
+  padding: 10px 0;
+  position: relative;
+}
+
+/* TEKS BERJALAN */
+.banner span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: scrollText 18s linear infinite;
+  color: #f5c542;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* ANIMASI */
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.slider{
+  max-width:900px;
+  margin:15px auto;
+  overflow:hidden;
+  border-radius:15px;
+  border:1px solid rgba(245,197,66,0.2);
+  box-shadow:0 10px 25px rgba(0,0,0,0.4);
+  position:relative;
+}
+
+.slides{
+  position:relative;
+  width:100%;
+  height:200px;
+}
+
+.slide{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  position:absolute;
+  top:0;
+  left:0;
+
+  opacity:0;
+  transform:scale(1.15) translateY(10px);
+  filter: blur(8px);
+
+  transition: all 1.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.slide.active{
+  opacity:1;
+  transform:scale(1) translateY(0);
+  filter: blur(0);
+}
+
+/* FIX BIAR GAMBAR TIDAK KE POTONG */
+.slide{
+  object-fit: contain;
+  background:#000;
+}
+
+/* BIAR SLIDER LEBIH SMOOTH DI MOBILE */
+.slides{
+  touch-action: pan-y;
+}
+
+.dots{
+  position:absolute;
+  bottom:12px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:8px;
+  z-index:10;
+
+  /* biar tetap aman di semua layar */
+  max-width:100%;
+}
+
+@media (max-width:768px){
+  .slider{
+    height:auto;
+  }
+
+  .dots{
+    bottom:8px;
+  }
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.dot.active{
+  background:#f5c542;
+  transform:scale(1.3);
+  box-shadow:0 0 10px #f5c542;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+/* glow background lebih hidup */
+body::before{
+  content:"";
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:radial-gradient(circle at top,#f5c54210,transparent 60%);
+  z-index:-2;
+}
+
+/* animasi masuk section */
+.fade-in{
+  opacity:0;
+  transform:translateY(20px);
+  transition:1s ease;
+}
+
+.fade-in.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.game-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  max-width:900px;
+  margin:20px auto;
+  padding:10px;
+}
+
+.game-card{
+  background:#0f172a;
+  border-radius:15px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:0.3s;
+  border:1px solid rgba(245,197,66,0.15);
+}
+
+.game-card img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+}
+
+.game-card span{
+  display:block;
+  text-align:center;
+  padding:10px;
+  font-weight:bold;
+}
+
+.game-card:hover{
+  transform:scale(1.05);
+  box-shadow:0 10px 25px rgba(245,197,66,0.2);
+}
+
+.game-section h2{
+  font-size:20px;
+  font-weight:600px;
+  text-align:center;
+
+  color:#f5c542;
+
+  letter-spacing:2px;
+
+  text-transform:uppercase;
+
+  text-shadow:
+    0 0 10px rgba(245,197,66,0.25),
+    0 0 25px rgba(245,197,66,0.1);
+
+  margin-bottom:15px;
+
+  position:relative;
+}
+
+.footer{
+  text-align:center;
+  padding:40px 20px;
+  margin-top:50px;
+
+  background:rgba(10,15,25,0.8);
+  border-top:1px solid rgba(245,197,66,0.2);
+}
+
+.footer h3{
+  color:#f5c542;
+  letter-spacing:2px;
+  margin-bottom:5px;
+}
+
+.footer p{
+  color:#aaa;
+  font-size:13px;
+}
+
+/* ICON SOSMED */
+.social{
+  margin-top:15px;
+  display:flex;
+  justify-content:center;
+  gap:15px;
+}
+
+.social a{
+  width:45px;
+  height:45px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border-radius:50%;
+  background:#0f172a;
+
+  border:1px solid rgba(245,197,66,0.2);
+
+  color:#f5c542;
+  font-size:18px;
+
+  transition:0.3s;
+}
+
+/* hover effect */
+.social a:hover{
+  transform:translateY(-5px) scale(1.1);
+  box-shadow:0 0 15px rgba(245,197,66,0.25);
+  border:1px solid #f5c542;
+}
+
+.game-banner{
+  text-align:center;
+  padding:20px;
+}
+
+.game-banner img{
+  width:140px;
+  height:140px;
+  object-fit:cover;
+  border-radius:20px;
+  border:2px solid #f5c542;
+  box-shadow:0 0 20px rgba(245,197,66,0.3);
+}
+
+.game-banner h2{
+  margin-top:10px;
+  color:#f5c542;
+  letter-spacing:2px;
+  text-shadow:0 0 10px rgba(245,197,66,0.2);
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<header class="navbar" id="navbar">
+
+  <div class="left">
+    <img src="logo.png" class="logo">
+    <div class="brand">
+      <span>SHINCORE</span>
+      <small>TOPUP STORE</small>
+    </div>
+  </div>
+
+  <div class="menu" id="menu">
+    <a href="#" class="active">Home</a>
+    <a href="topup.html">TopUp</a>
+    <a href="support.html">Support</a>
+  </div>
+
+  <div class="toggle" onclick="toggleMenu(this)">☰</div>
+
+</header>
+
+<div class="slider">
+<div class="dots" id="dots"></div>
+  <div class="slides">
+
+    <img src="banner1.png" class="slide active">
+    <img src="banner2.png" class="slide">
+    <img src="banner3.png" class="slide">
+
+  </div>
+
+</div>
+
+<div class="banner">
+  <span>
+    🔥 PROMO SHINCORE TOPUP • DISKON 10% DI DIAMOND 500+ • FAST PROCESS ⚡ • 24/7 ONLINE SUPPORT 💬 • AMAN & TERPERCAYA 🔐 •
+  </span>
+</div>
+
+<section class="game-section">
+
+  <h2 style="text-align:center; margin-top:20px;">Pilih Game</h2>
+
+  <div class="game-grid">
+
+    <div class="game-card" onclick="goTopup('Mobile Legends','mobilelegendss.jpg')">
+  <img src="mobilelegendss.jpg">
+  <span>Mobile Legends</span>
+</div>
+
+<div class="game-card" onclick="goTopup('Free Fire','freefire.jpg')">
+  <img src="freefire.jpg">
+  <span>Free Fire</span>
+</div>
+
+<div class="game-card" onclick="goTopup('PUBG','pubg.jpg')">
+  <img src="pubg.jpg">
+  <span>PUBG</span>
+</div>
+
+<div class="game-card" onclick="goTopup('Roblox','roblox.jpg')">
+  <img src="roblox.jpg">
+  <span>Roblox</span>
+</div>
+
+  </div>
+
+</section>
+    <h2 style="
+margin-top:20px;
+font-family:'Orbitron',sans-serif;
+font-size:22px;
+letter-spacing:2px;
+background:linear-gradient(90deg,#f5c542,#fff3b0,#f5c542);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+text-shadow:0 0 10px rgba(245,197,66,0.3);
+">
+Mobile Legends
+</h2>
+
+    <h3>ID Player</h3>
+    <input id="playerId" placeholder="Masukkan ID">
+
+    <h3>💎 Diamond</h3>
+    <div class="diamond-box">
+      <div class="diamond" onclick="selectDiamond(this,100)">
+  <span class="amount">100</span>
+  <span class="price-tag">15K</span>
+</div>
+
+<div class="diamond" onclick="selectDiamond(this,200)">
+  <span class="amount">200</span>
+  <span class="price-tag">28K</span>
+</div>
+
+<div class="diamond" onclick="selectDiamond(this,500)">
+  <span class="amount">500</span>
+  <span class="price-tag">65K</span>
+</div>
+
+<div class="diamond" onclick="selectDiamond(this,1000)">
+  <span class="amount">1000</span>
+  <span class="price-tag">120K</span>
+</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="card">
+    <h3>💳 Payment</h3>
+
+    <div class="payment">
+      <div class="pay-grid">
+        <div class="pay" onclick="selectPay(this,'qris')">QRIS</div>
+        <div class="pay" onclick="selectPay(this,'ewallet')">E-Wallet</div>
+        <div class="pay" onclick="selectPay(this,'bank')">Bank</div>
+      </div>
+
+      <div id="payInfo"></div>
+    </div>
+
+    <h3>📄 Ringkasan</h3>
+    <p id="summary">Belum ada pesanan</p>
+
+    <button onclick="checkout()">🚀 BAYAR SEKARANG</button>
+
+  </div>
+
+</div>
+
+
+<script>
+let game="Mobile Legends";
+let diamond=0;
+let payment="";
+
+/* =========================
+   GAME / DIAMOND / PAYMENT
+========================= */
+function selectGame(el,g){
+  document.querySelectorAll('.game').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  game=g;
+  update();
+}
+
+function selectDiamond(el,d){
+  document.querySelectorAll('.diamond').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  diamond=d;
+  update();
+}
+
+function selectPay(el,type){
+  document.querySelectorAll('.pay').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  payment=type;
+
+  let info=document.getElementById("payInfo");
+
+  if(type==="qris"){
+    info.innerHTML="📱 Scan QRIS (simulasi)";
+  }
+  else if(type==="ewallet"){
+    info.innerHTML="💸 DANA / OVO / GOPAY: 08xxxxxx";
+  }
+  else if(type==="bank"){
+    info.innerHTML="🏦 BCA: 1234567890";
+  }
+
+  update();
+}
+
+function update(){
+  let id=document.getElementById("playerId").value;
+
+  document.getElementById("summary").innerHTML=
+  "Game: "+game+"<br>"+
+  "ID: "+(id||"-")+"<br>"+
+  "Diamond: "+diamond+"<br>"+
+  "Payment: "+(payment||"-");
+}
+
+function checkout(){
+  let id=document.getElementById("playerId").value;
+
+  if(id==""||diamond==0||payment==""){
+    alert("Lengkapi semua!");
+    return;
+  }
+
+  alert("🔥 ORDER MASUK\nLanjutkan pembayaran!");
+}
+
+/* =========================
+   PARTICLE BACKGROUND
+========================= */
+let c=document.getElementById("bg");
+let ctx=c.getContext("2d");
+c.width=window.innerWidth;
+c.height=window.innerHeight;
+
+let p=[];
+for(let i=0;i<50;i++){
+  p.push({
+    x:Math.random()*c.width,
+    y:Math.random()*c.height,
+    vx:Math.random()-0.5,
+    vy:Math.random()-0.5
+  });
+}
+
+function draw(){
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle="#f5c542";
+
+  p.forEach(e=>{
+    e.x+=e.vx;
+    e.y+=e.vy;
+
+    if(e.x<0||e.x>c.width)e.vx*=-1;
+    if(e.y<0||e.y>c.height)e.vy*=-1;
+
+    ctx.fillRect(e.x,e.y,2,2);
+  });
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* =========================
+   SLIDER PRO ULTRA FIX
+========================= */
+let index = 0;
+let slides = document.querySelectorAll(".slide");
+let dotsContainer = document.getElementById("dots");
+let slider = document.querySelector(".slider");
+
+let startX = 0;
+
+/* DOT CREATE */
+slides.forEach((_, i) => {
+  let dot = document.createElement("div");
+  dot.classList.add("dot");
+
+  dot.addEventListener("click", () => {
+    index = i;
+    updateSlider();
+    resetAuto();
+  });
+
+  dotsContainer.appendChild(dot);
+});
+
+let dots = document.querySelectorAll(".dot");
+
+function updateSlider(){
+  slides.forEach(s => s.classList.remove("active"));
+  dots.forEach(d => d.classList.remove("active"));
+
+  slides[index].classList.add("active");
+  dots[index].classList.add("active");
+}
+
+/* AUTO SLIDE */
+let interval = setInterval(nextSlide, 5000);
+
+function nextSlide(){
+  index = (index + 1) % slides.length;
+  updateSlider();
+}
+
+function resetAuto(){
+  clearInterval(interval);
+  interval = setInterval(nextSlide, 5000);
+}
+
+/* SWIPE MOBILE */
+slider.addEventListener("touchstart", (e) => {
+  startX = e.touches[0].clientX;
+  clearInterval(interval);
+});
+
+slider.addEventListener("touchend", (e) => {
+  let endX = e.changedTouches[0].clientX;
+
+  if(startX > endX + 50){
+    index++;
+  } 
+  else if(startX < endX - 50){
+    index--;
+  }
+
+  if(index < 0) index = slides.length - 1;
+  if(index >= slides.length) index = 0;
+
+  updateSlider();
+  resetAuto();
+});
+
+updateSlider();
+
+/* =========================
+   NAVBAR TOGGLE FIX (NO DUPLICATE)
+========================= */
+function toggleMenu(el){
+  document.getElementById("menu").classList.toggle("active");
+  if(el) el.classList.toggle("active");
+}
+
+/* SHRINK NAVBAR ON SCROLL */
+window.addEventListener("scroll", () => {
+  let navbar = document.getElementById("navbar");
+
+  if(!navbar) return;
+
+  if(window.scrollY > 50){
+    navbar.classList.add("shrink");
+  } else {
+    navbar.classList.remove("shrink");
+  }
+});
+
+
+function goTopup(game, img){
+  localStorage.setItem("selectedGame", game);
+  localStorage.setItem("selectedImg", img);
+  window.location.href = "topup.html";
+}
+</script>
+
+
+<footer class="footer">
+
+  <h3>SHINCORE TOPUP</h3>
+  <p>Fast • Safe • Trusted</p>
+
+  <div class="social">
+
+    <a href="#">
+      <i class="fab fa-instagram"></i>
+    </a>
+
+    <a href="#">
+      <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <a href="#">
+      <i class="fab fa-tiktok"></i>
+    </a>
+
+    <a href="#">
+      <i class="fab fa-discord"></i>
+    </a>
+
+  </div>
+
+</footer>
+
+</body>
+</html>
