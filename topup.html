@@ -448,27 +448,29 @@ html{
 
   <!-- FORM -->
   <div class="card">
-    <h3>🆔 ID Player</h3>
-    <input id="playerId" placeholder="Masukkan ID Player">
+<div id="playerFields">
+  <h3>🆔 ID Player</h3>
+  <input id="playerId" placeholder="Masukkan ID Player">
+</div>
 
     <h3>💎 Diamond</h3>
     <div class="diamond-grid">
-      <div class="diamond" onclick="selectDiamond(100)">
+      <div class="diamond" onclick="selectDiamond(event, 100)">
   <span class="amount">100</span>
   <span class="price-tag" id="price-100">-</span>
 </div>
 
-<div class="diamond" onclick="selectDiamond(200)">
+<div class="diamond" onclick="selectDiamond(event, 200)">
   <span class="amount">200</span>
   <span class="price-tag" id="price-200">-</span>
 </div>
 
-<div class="diamond" onclick="selectDiamond(500)">
+<div class="diamond" onclick="selectDiamond(event, 500)">
   <span class="amount">500</span>
   <span class="price-tag" id="price-500">-</span>
 </div>
 
-<div class="diamond" onclick="selectDiamond(1000)">
+<div class="diamond" onclick="selectDiamond(event, 1000)">
   <span class="amount">1000</span>
   <span class="price-tag" id="price-1000">-</span>
 </div>
@@ -476,9 +478,9 @@ html{
 
     <h3>💳 Payment</h3>
     <div class="payments">
-      <div class="pay" onclick="pay('QRIS')">QRIS</div>
-      <div class="pay" onclick="pay('E-Wallet')">E-Wallet</div>
-      <div class="pay" onclick="pay('Bank')">Bank</div>
+      <div class="pay" onclick="pay(event, 'QRIS')">QRIS</div>
+      <div class="pay" onclick="pay(event, 'E-Wallet')">E-Wallet</div>
+      <div class="pay" onclick="pay(event, 'Bank')">Bank</div>
     </div>
 
 <div class="card">
@@ -503,7 +505,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let diamond = 0;
   let payment = "";
 
-  /* 🔥 DATA PER GAME (HARGA + NAMA CURRENCY) */
   const gameData = {
     "Mobile Legends": {
       currency: "Diamond",
@@ -539,6 +540,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("gameTitle").innerText = game;
 
+  function renderPlayerFields(){
+    let html = `<h3>🆔 ID Player</h3>
+    <input id="playerId" placeholder="Masukkan ID Player">`;
+
+    if(game === "Mobile Legends"){
+      html = `<h3>🆔 User ID</h3>
+      <input id="playerId" placeholder="Masukkan User ID">`;
+    } else if(game === "Free Fire"){
+      html = `<h3>🆔 UID</h3>
+      <input id="playerId" placeholder="Masukkan UID">`;
+    } else if(game === "PUBG"){
+      html = `<h3>🆔 Character ID</h3>
+      <input id="playerId" placeholder="Masukkan Character ID">`;
+    } else if(game === "Roblox"){
+      html = `<h3>👤 Username Roblox</h3>
+      <input id="playerId" placeholder="Masukkan Username Roblox">`;
+    }
+
+    document.getElementById("playerFields").innerHTML = html;
+  }
+
+  renderPlayerFields();
+
   const imgEl = document.getElementById("gameImg");
   imgEl.src = (img && img !== "null" && img !== "undefined") ? img : fallbackImg;
   imgEl.onerror = () => imgEl.src = fallbackImg;
@@ -553,9 +577,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateCurrencyLabel(){
     let data = getGameData();
-    document.querySelector("h3:nth-of-type(2)").innerText = data.icon + " " + data.currency;
+    document.querySelectorAll("h3").forEach(el=>{
+      if(el.innerText.includes("ID") || el.innerText.includes("User") || el.innerText.includes("UID")){
+        // skip
+      }
+    });
   }
-  updateCurrencyLabel();
 
   function updateDiamondPrices(){
     let data = getGameData();
@@ -564,22 +591,19 @@ document.addEventListener("DOMContentLoaded", () => {
       let amountEl = el.querySelector(".amount");
       let priceEl = el.querySelector(".price-tag");
 
-      if(amountEl && priceEl){
-        let val = amountEl.innerText;
-        let price = data.price[val];
+      let val = amountEl.innerText;
+      let price = data.price[val];
 
-        if(price){
-          priceEl.innerText = formatK(price);
-          priceEl.style.fontSize = "8px";
-          priceEl.style.fontWeight = "100";
-        }
+      if(price){
+        priceEl.innerText = formatK(price);
       }
     });
   }
+
   updateDiamondPrices();
 
   function updateSummary(){
-    let id = document.getElementById("playerId").value || "-";
+    let id = document.getElementById("playerId")?.value || "-";
     let data = getGameData();
     let price = data.price[diamond] || 0;
 
@@ -587,15 +611,17 @@ document.addEventListener("DOMContentLoaded", () => {
       🆔 ID: <b>${id}</b><br>
       ${data.icon} ${data.currency}: <b>${diamond || "-"}</b><br>
       💳 Payment: <b>${payment || "-"}</b><br>
-      💰 Harga: <b>Rp ${price.toLocaleString()}</b><br>
-      🔥 Total Bayar: <b>Rp ${price.toLocaleString()}</b>
+      💰 Harga: <b>Rp ${price.toLocaleString()}</b>
     `;
   }
 
-  document.getElementById("playerId").addEventListener("input", updateSummary);
+  document.addEventListener("input", (e)=>{
+    if(e.target.id === "playerId"){
+      updateSummary();
+    }
+  });
 
-  /* ✅ FIX DIAMOND */
-  window.selectDiamond = function(val){
+  window.selectDiamond = function(event, val){
     diamond = val;
 
     document.querySelectorAll(".diamond").forEach(el=>{
@@ -603,15 +629,13 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.transform = "scale(1)";
     });
 
-    let selected = event.currentTarget; // 🔥 FIX
-    selected.style.border = "1px solid #f5c542";
-    selected.style.transform = "scale(1.05)";
+    event.currentTarget.style.border = "1px solid #f5c542";
+    event.currentTarget.style.transform = "scale(1.05)";
 
     updateSummary();
   };
 
-  /* ✅ FIX PAYMENT */
-  window.pay = function(p){
+  window.pay = function(event, p){
     payment = p;
 
     document.querySelectorAll(".pay").forEach(el=>{
@@ -619,14 +643,15 @@ document.addEventListener("DOMContentLoaded", () => {
       el.style.transform = "scale(1)";
     });
 
-    let selected = event.currentTarget; // 🔥 FIX
-    selected.style.border = "1px solid #f5c542";
-    selected.style.transform = "scale(1.05)";
+    event.currentTarget.style.border = "1px solid #f5c542";
+    event.currentTarget.style.transform = "scale(1.05)";
 
     updateSummary();
   };
 
+  /* 🔥 CHECKOUT MIDTRANS FIX */
   window.checkout = function(){
+
     let id = document.getElementById("playerId").value;
 
     if(!id || !diamond || !payment){
@@ -634,41 +659,55 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    let data = getGameData();
-    let price = data.price[diamond] || 0;
+    let dataGame = getGameData();
+    let price = dataGame.price[diamond] || 0;
 
-    alert(
-      "🔥 ORDER MASUK\n\n"+
-      "Game: " + game + "\n"+
-      "ID: " + id + "\n"+
-      data.icon + " " + data.currency + ": " + diamond + "\n"+
-      "Payment: " + payment + "\n"+
-      "Harga: Rp " + price.toLocaleString()
-    );
+      fetch("https://shincorebackendcom-production.up.railway.app/order.php", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body:
+        "game=" + encodeURIComponent(game) +
+        "&player_id=" + encodeURIComponent(id) +
+        "&diamond=" + encodeURIComponent(diamond) +
+        "&payment=" + encodeURIComponent(payment) +
+        "&price=" + encodeURIComponent(price)
+    })
+    .then(res => res.json())
+    .then(data => {
+
+      console.log(data);
+
+      if(data.status_code == "201"){
+
+        alert(
+          "🔥 TRANSAKSI BERHASIL DIBUAT\n\n" +
+          "Order ID: " + data.order_id + "\n\n" +
+          "Silakan bayar sesuai instruksi Midtrans"
+        );
+
+        document.getElementById("playerId").value = "";
+        diamond = 0;
+        payment = "";
+        updateSummary();
+
+      } else {
+
+        alert("Transaksi gagal!");
+        console.log(data);
+
+      }
+
+    })
+    .catch(err => {
+      alert("Server error!");
+      console.log(err);
+    });
+
   };
 
 });
-
-/* BACKGROUND (TIDAK DIUBAH) */
-const particles = document.querySelector(".particles");
-
-for (let i = 0; i < 40; i++) {
-  let span = document.createElement("span");
-  span.style.left = Math.random() * 100 + "vw";
-  span.style.animationDuration = (3 + Math.random() * 5) + "s";
-  span.style.opacity = Math.random();
-  particles.appendChild(span);
-}
-
-for (let i = 0; i < 6; i++) {
-  let line = document.createElement("div");
-  line.classList.add("glow-line");
-  line.style.left = Math.random() * 100 + "vw";
-  line.style.animationDuration = (4 + Math.random() * 4) + "s";
-  line.style.opacity = Math.random();
-  document.body.appendChild(line);
-}
 </script>
-
 </body>
 </html>
