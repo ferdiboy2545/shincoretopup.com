@@ -677,29 +677,29 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(res => res.json())
     .then(data => {
 
-      console.log(data);
+  console.log(data);
 
-      if(data.status_code == "201"){
+  if(data.status == "success"){
 
-        alert(
-          "🔥 TRANSAKSI BERHASIL DIBUAT\n\n" +
-          "Order ID: " + data.order_id + "\n\n" +
-          "Silakan bayar sesuai instruksi Midtrans"
-        );
+    alert(
+      "✅ ORDER BERHASIL!\n\n" +
+      "Order ID: " + data.order_id + "\n\n" +
+      "Silakan tunggu admin approve"
+    );
 
-        document.getElementById("playerId").value = "";
-        diamond = 0;
-        payment = "";
-        updateSummary();
+    document.getElementById("playerId").value = "";
+    diamond = 0;
+    payment = "";
+    updateSummary();
 
-      } else {
+  } else {
 
-        alert("Transaksi gagal!");
-        console.log(data);
+    alert("Transaksi gagal!");
+    console.log(data);
 
-      }
+  }
 
-    })
+})
     .catch(err => {
       alert("Server error!");
       console.log(err);
