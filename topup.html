@@ -508,11 +508,34 @@ html{
   }
 }
 
+#musicBtn{
+  position:fixed;
+  bottom:10px;
+  left:10px;
+  padding:12px 14px;
+  border-radius:10px;
+  background:#111827;
+  border:1px solid #f5c542;
+  color:#f5c542;
+  font-weight:bold;
+  cursor:pointer;
+  z-index:9999;
+  box-shadow:0 0 10px rgba(245,197,66,0.3);
+  transition:0.2s;
+  transform:scale(0.8);
+}
 
+#musicBtn:hover{
+  transform:scale(0.6);
+}
 </style>
 </head>
 
 <body>
+<div id="musicBtn" onclick="toggleMusic()">
+  🎵
+</div>
+
 
 <div class="diamond-bg"></div>
 
@@ -838,14 +861,52 @@ setInterval(createDiamond, 200);
 
 
 
-document.addEventListener("click", function startMusic(){
-  const music = document.getElementById("bgMusic");
-  music.volume = 0.3; // biar gak terlalu keras
-  music.play().catch(()=>{});
+//music
+window.addEventListener("DOMContentLoaded", () => {
 
-  // hapus event biar gak spam play
-  document.removeEventListener("click", startMusic);
+  const music = document.getElementById("bgMusic");
+
+  let isPlaying = localStorage.getItem("musicOn") === "true";
+  let savedTime = localStorage.getItem("musicTime");
+
+  if (!music) return;
+
+  // lanjut posisi lagu
+  if (savedTime) {
+    music.currentTime = parseFloat(savedTime);
+  }
+
+  music.volume = 0.4;
+
+  // auto resume kalau sebelumnya ON
+  if (isPlaying) {
+    music.play().catch(() => {});
+  }
+
+  window.toggleMusic = function () {
+
+    if (!music) return;
+
+    if (music.paused) {
+      music.play().then(() => {
+        localStorage.setItem("musicOn", "true");
+      }).catch(()=>{});
+    } else {
+      music.pause();
+      localStorage.setItem("musicOn", "false");
+    }
+
+  };
+
+  // simpan posisi setiap detik
+  setInterval(() => {
+    if (!music.paused) {
+      localStorage.setItem("musicTime", music.currentTime);
+    }
+  }, 1000);
+
 });
+
 
 //sound click
 function playClick(){
