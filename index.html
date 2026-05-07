@@ -998,6 +998,36 @@ function goTopup(game, img){
   localStorage.setItem("selectedImg", img);
   window.location.href = "topup.html";
 }
+
+
+// music
+document.addEventListener("click", function startMusic(){
+  const music = document.getElementById("bgMusic");
+  music.volume = 0.3; // biar gak terlalu keras
+  music.play().catch(()=>{});
+
+  // hapus event biar gak spam play
+  document.removeEventListener("click", startMusic);
+});
+
+//sound click
+function playClick(){
+  const sound = document.getElementById("uiSound");
+  if(!sound) return;
+
+  sound.currentTime = 0;
+  sound.volume = 0.4;
+  sound.play().catch(()=>{});
+}
+
+document.addEventListener("click", function(e){
+
+  // hindari klik kosong / area berat (biar gak spam & lag)
+  if(e.target.closest("script") || e.target.tagName === "HTML") return;
+
+  playClick();
+
+});
 </script>
 
 
@@ -1027,6 +1057,13 @@ function goTopup(game, img){
   </div>
 
 </footer>
+
+
+<audio id="bgMusic" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="uiSound" src="click.mp3" preload="auto"></audio>
 
 </body>
 </html>

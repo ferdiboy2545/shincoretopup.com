@@ -385,7 +385,28 @@ window.addEventListener("scroll", () => {
     navbar.classList.remove("shrink");
   }
 });
+
+
+//sound click
+function playClick(){
+  const sound = document.getElementById("uiSound");
+  if(!sound) return;
+
+  sound.currentTime = 0;
+  sound.volume = 0.4;
+  sound.play().catch(()=>{});
+}
+
+document.addEventListener("click", function(e){
+
+  // hindari klik kosong / area berat (biar gak spam & lag)
+  if(e.target.closest("script") || e.target.tagName === "HTML") return;
+
+  playClick();
+
+});
 </script>
 
+<audio id="uiSound" src="click.mp3" preload="auto"></audio>
 </body>
 </html>

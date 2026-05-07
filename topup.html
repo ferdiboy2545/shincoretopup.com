@@ -412,10 +412,109 @@ html{
   font-weight:bold;
 }
 
+
+/* ===== DIAMOND FALLING BACKGROUND ===== */
+
+.diamond-bg{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  z-index:-3;
+  pointer-events:none;
+}
+
+/* diamond item */
+.diamond-fall{
+  position:absolute;
+  top:-50px;
+  width:30px;
+  height:30px;
+  background:url("diamond.png") no-repeat center;
+  background-size:contain;
+  animation: fall linear infinite;
+  opacity:0.9;
+  filter: drop-shadow(0 0 6px rgba(245,197,66,0.6));
+}
+
+/* animasi jatuh */
+@keyframes fall{
+  0%{
+    transform:translateY(-50px) rotate(0deg);
+    opacity:0;
+  }
+  10%{
+    opacity:1;
+  }
+  100%{
+    transform:translateY(110vh) rotate(360deg);
+    opacity:0;
+  }
+}
+
+
+
+.card{
+  background:#0f172a;
+  padding:18px;
+  border-radius:15px;
+  border:1px solid rgba(245,197,66,0.2);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:0.4s;
+  position:relative;
+  overflow:hidden;
+}
+
+/* ===== NEON GOLD RUNNING BORDER ===== */
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  padding:2px;
+  border-radius:15px;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    #f5c542,
+    #ffd700,
+    #f5c542,
+    transparent
+  );
+
+  background-size:300% 300%;
+  animation: borderMove 3s linear infinite;
+
+  /* bikin hanya border yang kelihatan */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  pointer-events:none;
+}
+
+/* animasi jalan LED */
+@keyframes borderMove{
+  0%{
+    background-position:0% 50%;
+  }
+  100%{
+    background-position:300% 50%;
+  }
+}
+
+
 </style>
 </head>
 
 <body>
+
+<div class="diamond-bg"></div>
 
 <!-- VIP BACKGROUND -->
 <div class="particles"></div>
@@ -708,6 +807,72 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
 });
+
+
+
+function createDiamond(){
+  const container = document.querySelector(".diamond-bg");
+
+  const diamond = document.createElement("div");
+  diamond.classList.add("diamond-fall");
+
+  // random posisi
+  diamond.style.left = Math.random() * 100 + "vw";
+
+  // random size
+  let size = Math.random() * 20 + 20;
+  diamond.style.width = size + "px";
+  diamond.style.height = size + "px";
+
+  // random speed
+  diamond.style.animationDuration = (Math.random() * 5 + 3) + "s";
+
+  container.appendChild(diamond);
+
+  setTimeout(()=>{
+    diamond.remove();
+  }, 8000);
+}
+
+setInterval(createDiamond, 200);
+
+
+
+document.addEventListener("click", function startMusic(){
+  const music = document.getElementById("bgMusic");
+  music.volume = 0.3; // biar gak terlalu keras
+  music.play().catch(()=>{});
+
+  // hapus event biar gak spam play
+  document.removeEventListener("click", startMusic);
+});
+
+//sound click
+function playClick(){
+  const sound = document.getElementById("uiSound");
+  if(!sound) return;
+
+  sound.currentTime = 0;
+  sound.volume = 0.4;
+  sound.play().catch(()=>{});
+}
+
+document.addEventListener("click", function(e){
+
+  // hindari klik kosong / area berat (biar gak spam & lag)
+  if(e.target.closest("script") || e.target.tagName === "HTML") return;
+
+  playClick();
+
+});
 </script>
+
+<audio id="bgMusic" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="uiSound" src="click.mp3" preload="auto"></audio>
+
+
 </body>
 </html>
